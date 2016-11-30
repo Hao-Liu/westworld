@@ -8,11 +8,12 @@ from window import Window
 
 
 if __name__ == '__main__':
-
-    window = Window()
-    window_proc = multiprocessing.Process(target=window.run)
-    window_proc.start()
-
     world = World()
-    world.run()
-    window_proc.join()
+    world_proc = multiprocessing.Process(target=world.run)
+    world_proc.start()
+    window = Window()
+    try:
+        window.run()
+    except KeyboardInterrupt:
+        pass
+    world_proc.join()

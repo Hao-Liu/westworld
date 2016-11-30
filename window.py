@@ -1,6 +1,7 @@
 import pyglet
 import time
 import xmlrpc.client
+import math
 
 class Window(pyglet.window.Window):
     def __init__(self, width=800, height=600):
@@ -19,17 +20,57 @@ class Window(pyglet.window.Window):
         pyglet.resource.path = ['.']
         pyglet.resource.reindex()
         self.circle_img = pyglet.resource.image("circle.png")
+        self.circle_img.anchor_x = self.circle_img.width / 2
+        self.circle_img.anchor_y = self.circle_img.height / 2
         self.proxy = xmlrpc.client.ServerProxy('http://localhost:8000')
 
     def render(self):
         self.clear()
+        tiles = self.proxy.get_tiles()
+        pyglet.gl.glLineWidth(2.0)
+        for tile in tiles:
+            keys = ['x', 'y', 'width', 'height', 'nutrition']
+            x, y, width, height, nutrition = (
+                    tile.get(key) for key in keys)
+            pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
+            pyglet.graphics.draw(
+                    4,
+                    pyglet.gl.GL_LINE_LOOP,
+                    ("v2f", (
+                        x, y,
+                        x, y + height,
+                        x + width, y + height,
+                        x + width, y)))
+            pyglet.gl.glColor4f(0.0, 0.0, nutrition, 1.0)
+            pyglet.graphics.draw(
+                    4,
+                    pyglet.gl.GL_QUADS,
+                    ("v2f", (
+                        x, y,
+                        x, y + height,
+                        x + width, y + height,
+                        x + width, y)))
+
         agents = self.proxy.get_agents()
-        for x, y, size in agents:
+        for agent in agents:
+            keys = ['x', 'y', 'v', 'direction', 'size']
+            x, y, v, direction, size = (
+                    agent.get(key) for key in keys)
             circle = pyglet.sprite.Sprite(
                     img=self.circle_img,
                     x=x, y=y)
-            circle.scale = size * 0.01
+            circle.scale = size * 0.1
             circle.draw()
+
+            pyglet.gl.glColor4f(1.0, 0, 0, 1.0)
+            pyglet.graphics.draw(
+                    2,
+                    pyglet.gl.GL_LINES,
+                    ("v2f", (
+                        x,
+                        y,
+                        x + circle.width * math.sin(direction),
+                        y + circle.height * math.cos(direction))))
 
         #self.label.draw()
         self.flip()
