@@ -1,7 +1,8 @@
-import pyglet
 import time
 import xmlrpc.client
 import math
+
+import pyglet
 
 class Window(pyglet.window.Window):
     def __init__(self, width=800, height=600):
@@ -53,7 +54,7 @@ class Window(pyglet.window.Window):
 
         agents = self.proxy.get_agents()
         for agent in agents:
-            keys = ['x', 'y', 'v', 'direction', 'size']
+            keys = ['x', 'y', 'v', 'direction', 'size', 'sight']
             x, y, v, direction, size = (
                     agent.get(key) for key in keys)
             circle = pyglet.sprite.Sprite(
