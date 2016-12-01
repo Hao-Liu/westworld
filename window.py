@@ -29,8 +29,8 @@ class Window(pyglet.window.Window):
         tiles = self.proxy.get_tiles()
         pyglet.gl.glLineWidth(2.0)
         for tile in tiles:
-            keys = ['x', 'y', 'width', 'height', 'nutrition']
-            x, y, width, height, nutrition = (
+            keys = ['x', 'y', 'width', 'height', 'nutrition', "n_agents"]
+            x, y, width, height, nutrition, n_agents= (
                     tile.get(key) for key in keys)
             pyglet.gl.glColor4f(1.0, 1.0, 1.0, 1.0)
             pyglet.graphics.draw(
@@ -41,7 +41,7 @@ class Window(pyglet.window.Window):
                         x, y + height,
                         x + width, y + height,
                         x + width, y)))
-            pyglet.gl.glColor4f(0.0, 0.0, nutrition, 1.0)
+            pyglet.gl.glColor4f(0.0, 0.0, n_agents / 3.0, 1.0)
             pyglet.graphics.draw(
                     4,
                     pyglet.gl.GL_QUADS,
@@ -79,9 +79,7 @@ class Window(pyglet.window.Window):
         self.render()
 
     def run(self):
-        i = 0
         while self.alive:
-            i += 1
             time.sleep(0.01)
             event = self.dispatch_events()
             self.render()
