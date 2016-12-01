@@ -1,4 +1,5 @@
 import itertools
+import math
 import threading
 import time
 from xmlrpc.server import SimpleXMLRPCServer
@@ -20,9 +21,12 @@ class World(object):
         self.server.register_function(self.get_tiles)
         self.server_thread = threading.Thread(target=self.server.serve_forever)
 
-        self.tiles = [[Tile(self, i*100, j*100, 100, 100)
-            for j in range(6)]
-            for i in range(8)]
+        tiles_x = math.ceil(self.width / self.tile_size)
+        tiles_y = math.ceil(self.height / self.tile_size)
+
+        self.tiles = [[Tile(self, i*100, j*100, 100, 100, self.tile_size)
+            for y in range(tiles_y)]
+            for x in range(tiles_x)]
 
         self.agents = []
         for i in range(n_agents):
