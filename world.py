@@ -21,12 +21,12 @@ class World(object):
         self.server.register_function(self.get_tiles)
         self.server_thread = threading.Thread(target=self.server.serve_forever)
 
-        tiles_x = math.ceil(self.width / self.tile_size)
-        tiles_y = math.ceil(self.height / self.tile_size)
+        self.tiles_x = math.ceil(self.width / self.tile_size)
+        self.tiles_y = math.ceil(self.height / self.tile_size)
 
-        self.tiles = [[Tile(self, i*100, j*100, 100, 100, self.tile_size)
-            for y in range(tiles_y)]
-            for x in range(tiles_x)]
+        self.tiles = [[Tile(self, x*100, y*100, 100, 100, self.tile_size)
+            for y in range(self.tiles_y)]
+            for x in range(self.tiles_x)]
 
         self.agents = []
         for i in range(n_agents):
