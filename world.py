@@ -9,8 +9,8 @@ from tile import Tile
 
 
 class World(object):
-    tile_size = 100
-    def __init__(self, n_agents=20, width=800, height=600):
+    tile_size = 50
+    def __init__(self, n_agents=10, width=800, height=600):
         self.alive = True
         self.width = width
         self.height = height
@@ -24,7 +24,7 @@ class World(object):
         self.tiles_x = math.ceil(self.width / self.tile_size)
         self.tiles_y = math.ceil(self.height / self.tile_size)
 
-        self.tiles = [[Tile(self, x*100, y*100, 100, 100, self.tile_size)
+        self.tiles = [[Tile(self, x*self.tile_size, y*self.tile_size, self.tile_size, self.tile_size, self.tile_size)
             for y in range(self.tiles_y)]
             for x in range(self.tiles_x)]
 

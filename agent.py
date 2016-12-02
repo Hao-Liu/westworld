@@ -1,21 +1,8 @@
+from __future__ import division
+
 import random
 import math
-
-def intersect(x, y, l, direct, x0, y0, r):
-    x -= x0
-    y -= y0
-    a = x**2 + y**2 - r**2
-    b = 2 * l * (x * math.sin(direct) + y * math.cos(direct))
-    c = l**2
-    disc = b**2 - 4 * a * c;
-    if disc <= 0:
-        return False
-    sqrtdisc = math.sqrt(disc)
-    t1 = (-b + sqrtdisc) / (2 * a);
-    t2 = (-b - sqrtdisc) / (2 * a);
-    if 0 < t1 < 1 and 0 < t2 < 1:
-        return True
-    return False
+import utils
 
 class Agent(object):
     def __init__(self, world):
@@ -25,10 +12,16 @@ class Agent(object):
         self.y = random.random() * world.height
         self.v = random.random()
         self.direction = random.random() * math.pi * 2.0
-        self.size = 50.0
+        self.size = random.random() * 100.0
         self.tile = None
+        self.n_cell = 10
+        self.aov = 120 * math.pi / 180
         self.sight = 100.0
         self.update()
+
+    def to_dict(self):
+        keys = "x", "y", "v", "direction", "size", "sight", "vision", "n_cell", "aov"
+        return {key: self.__dict__[key] for key in keys}
 
 
     def update_tile(self):
@@ -49,30 +42,18 @@ class Agent(object):
         agents.remove(self)
 
         vision = []
-        for idx in range(-5, 6):
-            sight_dir = self.direction + idx * math.pi / 15
-            see = False
+        for sight_dir in utils.linspace(- self.aov / 2, self.aov / 2, self.n_cell):
+            sight_dir = self.direction + sight_dir
+            min_sight = 1.0
             for agent in agents:
-                if intersect(self.x, self.y, self.sight, sight_dir, agent.x, agent.y, agent.size):
-                    see = True
-                    break
-            vision.append(see)
+                sight = utils.intersect(self.x, self.y, self.sight, sight_dir, agent.x, agent.y, agent.size / 2)
+                min_sight = min(sight, min_sight)
+            vision.append(min_sight)
         self.vision = vision
 
     def update(self):
         self.update_tile()
         self.update_vision()
-
-    def to_dict(self):
-        return {
-                "x": self.x,
-                "y": self.y,
-                "v": self.v,
-                "direction": self.direction,
-                "size": self.size,
-                "sight": self.sight,
-                "vision": self.vision,
-                }
 
     def step(self):
         self.direction += (random.random() - 0.5) * 0.1
@@ -86,8 +67,8 @@ class Agent(object):
         if self.v > 1.0:
             self.v = 1.0
 
-        self.vx = self.v * math.sin(self.direction)
-        self.vy = self.v * math.cos(self.direction)
+        self.vx = self.v * math.cos(self.direction)
+        self.vy = self.v * math.sin(self.direction)
         self.x += self.vx
         self.y += self.vy
         if self.x >= self.world.width:

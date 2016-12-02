@@ -12,6 +12,12 @@ class Tile(object):
         self.nutrition = random.random()
         self.agents = set()
 
+    def to_dict(self):
+        keys = "x", "y", "width", "height", "nutrition"
+        result = {key: self.__dict__[key] for key in keys}
+        result['n_agents'] = len(self.agents)
+        return result
+
     def neighbors(self, distance):
         nblk = math.ceil(distance / self.size)
         x = int(self.x / self.size)
@@ -28,13 +34,3 @@ class Tile(object):
                     ny -= self.world.tiles_y
                 tiles.append(self.world.tiles[nx][ny])
         return tiles
-
-    def to_dict(self):
-        return {
-            "x": self.x,
-            "y": self.y,
-            "width": self.width,
-            "height": self.height,
-            "nutrition": self.nutrition,
-            "n_agents": len(self.agents),
-        }

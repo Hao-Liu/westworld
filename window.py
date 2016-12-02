@@ -4,6 +4,8 @@ import math
 
 import pyglet
 
+import utils
+
 class Window(pyglet.window.Window):
     def __init__(self, width=800, height=600):
         super(Window, self).__init__(width=width, height=height)
@@ -54,30 +56,40 @@ class Window(pyglet.window.Window):
 
         agents = self.proxy.get_agents()
         for agent in agents:
-            keys = ['x', 'y', 'v', 'direction', 'size', 'sight', 'vision']
-            x, y, v, direction, size, sight, vision = (
-                    agent.get(key) for key in keys)
-            circle = pyglet.sprite.Sprite(
-                    img=self.circle_img,
-                    x=x, y=y)
-            circle.scale = size / self.circle_img.width
-            circle.draw()
-
-            for idx in range(-5, 6):
-                if vision[idx + 5]:
+            x = agent['x']
+            y = agent['y']
+            direction = agent['direction']
+            sight = agent['sight']
+            vision = agent['vision']
+            n_cell = agent['n_cell']
+            aov = agent['aov']
+            for idx, sight_dir in enumerate(utils.linspace(- aov / 2, aov / 2, n_cell)):
+                sight_dir = direction + sight_dir
+                ratio = vision[idx]
+                if ratio != 1.0:
                     color = (1, 0, 0, 1)
                 else:
                     color = (0, 1, 0, 1)
                 pyglet.gl.glColor4f(*color)
-                sight_dir = direction + idx * math.pi / 15
+                #sight_dir = direction + idx * math.pi / 15
                 pyglet.graphics.draw(
                         2,
                         pyglet.gl.GL_LINES,
                         ("v2f", (
                             x,
                             y,
-                            x + sight * math.sin(sight_dir),
-                            y + sight * math.cos(sight_dir))))
+                            x + sight * ratio * math.cos(sight_dir),
+                            y + sight * ratio * math.sin(sight_dir))))
+
+        for agent in agents:
+            x = agent['x']
+            y = agent['y']
+            size = agent['size']
+            circle = pyglet.sprite.Sprite(
+                    img=self.circle_img,
+                    x=x, y=y)
+            circle.scale = size / self.circle_img.width * 1.3
+            circle.draw()
 
         #self.label.draw()
         self.flip()
@@ -87,6 +99,6 @@ class Window(pyglet.window.Window):
 
     def run(self):
         while self.alive:
-            time.sleep(0.01)
+            time.sleep(0.02)
             event = self.dispatch_events()
             self.render()
