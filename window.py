@@ -9,7 +9,6 @@ import utils
 class Window(pyglet.window.Window):
     def __init__(self, width=800, height=600):
         super(Window, self).__init__(width=width, height=height)
-        self.alive = True
         self.label = pyglet.text.Label(
                 'Hello, world',
                 font_name='Times New Roman',
@@ -98,7 +97,10 @@ class Window(pyglet.window.Window):
         self.render()
 
     def run(self):
-        while self.alive:
-            time.sleep(0.02)
-            event = self.dispatch_events()
-            self.render()
+        time.sleep(0.02)
+        try:
+            while True:
+                event = self.dispatch_events()
+                self.render()
+        except KeyboardInterrupt:
+            self.proxy.stop()

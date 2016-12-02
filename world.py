@@ -11,20 +11,27 @@ from tile import Tile
 class World(object):
     tile_size = 50
     def __init__(self, n_agents=10, width=800, height=600):
-        self.alive = True
+        self.running = False
         self.width = width
         self.height = height
 
-        self.server = SimpleXMLRPCServer(("localhost", 8000), logRequests=False)
+        self.server = SimpleXMLRPCServer(("localhost", 8000), logRequests=False, allow_none=True)
         self.server.register_introspection_functions()
         self.server.register_function(self.get_agents)
         self.server.register_function(self.get_tiles)
+        self.server.register_function(self.stop)
         self.server_thread = threading.Thread(target=self.server.serve_forever)
 
         self.tiles_x = math.ceil(self.width / self.tile_size)
         self.tiles_y = math.ceil(self.height / self.tile_size)
 
-        self.tiles = [[Tile(self, x*self.tile_size, y*self.tile_size, self.tile_size, self.tile_size, self.tile_size)
+        self.tiles = [[
+            Tile(self,
+                 x*self.tile_size,
+                 y*self.tile_size,
+                 self.tile_size,
+                 self.tile_size,
+                 self.tile_size)
             for y in range(self.tiles_y)]
             for x in range(self.tiles_x)]
 
@@ -54,10 +61,13 @@ class World(object):
         print("Listening on port 8000...")
         self.server_thread.start()
         try:
-            while True:
+            self.running = True
+            while self.running:
                 self.step()
-        except KeyboardInterrupt:
-            self.alive = False
+        finally:
             self.server.shutdown()
             self.server.server_close()
             self.server_thread.join()
+
+    def stop(self):
+        self.running = False

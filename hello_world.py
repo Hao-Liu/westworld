@@ -14,6 +14,5 @@ if __name__ == '__main__':
     window = Window()
     try:
         window.run()
-    except KeyboardInterrupt:
-        pass
-    world_proc.join()
+    finally:
+        world_proc.join()

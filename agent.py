@@ -17,7 +17,7 @@ class Agent(object):
         self.n_cell = 10
         self.aov = 120 * math.pi / 180
         self.sight = 100.0
-        self.update()
+        self.step()
 
     def to_dict(self):
         keys = "x", "y", "v", "direction", "size", "sight", "vision", "n_cell", "aov"
@@ -51,17 +51,26 @@ class Agent(object):
             vision.append(min_sight)
         self.vision = vision
 
-    def update(self):
-        self.update_tile()
-        self.update_vision()
+    def update_position(self, dv=None, dd=None):
+        if dv is None:
+            dv = (random.random() - 0.5) * 0.1
+        if dd is None:
+            dd = (random.random() - 0.5) * 0.1
+        if dv > 0.05:
+            dv = 0.05
+        elif dv < -0.05:
+            dv = -0.05
+        if dd > 0.05:
+            dd = 0.05
+        elif dd < -0.05:
+            dd = -0.05
 
-    def step(self):
-        self.direction += (random.random() - 0.5) * 0.1
+        self.direction += dd
+        self.v += dv
+
         if self.direction > math.pi * 2:
             self.direction -= math.pi * 2
 
-        self.dv = (random.random() - 0.5) * 0.1
-        self.v += self.dv
         if self.v < 0.0:
             self.v = 0.0
         if self.v > 1.0:
@@ -79,4 +88,12 @@ class Agent(object):
             self.y = 1e-6
         if self.y <= 0:
             self.y = self.world.height - 1e-6
-        self.update()
+
+    def get_action(self):
+        return None, None
+
+    def step(self):
+        dv, dd = self.get_action()
+        self.update_position(dv, dd)
+        self.update_tile()
+        self.update_vision()
