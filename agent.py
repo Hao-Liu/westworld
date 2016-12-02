@@ -62,8 +62,8 @@ class Agent(object):
         dx = self.x - agent.x
         dy = self.y - agent.y
         if 4 * (dx**2 + dy**2) < (self.size + agent.size)**2:
-            return False
-        return True 
+            return True
+        return False
 
     def update_position(self, dv=None, dd=None):
         if dv is None:

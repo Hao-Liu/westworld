@@ -79,7 +79,6 @@ class Window(pyglet.window.Window):
                             x + sight * ratio * math.cos(sight_dir),
                             y + sight * ratio * math.sin(sight_dir))))
 
-        rewards = []
         for agent in agents:
             x = agent['x']
             y = agent['y']
@@ -90,10 +89,11 @@ class Window(pyglet.window.Window):
                     x=x, y=y,
             )
             if reward:
-                rewards.append(reward)
+                circle.color = (255, 0, 0)
+            else:
+                circle.color = (255, 255, 255)
             circle.scale = size / self.circle_img.width * 1.3
             circle.draw()
-        print(rewards)
 
         self.flip()
 

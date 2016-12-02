@@ -6,6 +6,7 @@ from xmlrpc.server import SimpleXMLRPCServer
 
 from agent import Agent
 from tile import Tile
+from brain import Brain
 
 
 class World(object):
@@ -14,6 +15,7 @@ class World(object):
         self.running = False
         self.width = width
         self.height = height
+        self.brain = Brain(self)
 
         self.server = SimpleXMLRPCServer(("localhost", 8000), logRequests=False, allow_none=True)
         self.server.register_introspection_functions()
