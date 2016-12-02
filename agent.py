@@ -17,10 +17,12 @@ class Agent(object):
         self.n_cell = 10
         self.aov = 120 * math.pi / 180
         self.sight = 100.0
+        self.vision = [0.0 for _ in range(self.n_cell)]
+        self.reward = 0
         self.step()
 
     def to_dict(self):
-        keys = "x", "y", "v", "direction", "size", "sight", "vision", "n_cell", "aov"
+        keys = "x", "y", "v", "direction", "size", "sight", "vision", "n_cell", "aov", "reward"
         return {key: self.__dict__[key] for key in keys}
 
 
@@ -50,6 +52,18 @@ class Agent(object):
                 min_sight = min(sight, min_sight)
             vision.append(min_sight)
         self.vision = vision
+
+        self.reward = 0
+        for agent in agents:
+            if self.is_collide_with(agent):
+                self.reward -= 1
+
+    def is_collide_with(self, agent):
+        dx = self.x - agent.x
+        dy = self.y - agent.y
+        if 4 * (dx**2 + dy**2) < (self.size + agent.size)**2:
+            return False
+        return True 
 
     def update_position(self, dv=None, dd=None):
         if dv is None:

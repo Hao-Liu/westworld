@@ -64,6 +64,8 @@ class World(object):
             self.running = True
             while self.running:
                 self.step()
+        except KeyboardInterrupt:
+            pass
         finally:
             self.server.shutdown()
             self.server.server_close()

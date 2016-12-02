@@ -70,7 +70,6 @@ class Window(pyglet.window.Window):
                 else:
                     color = (0, 1, 0, 1)
                 pyglet.gl.glColor4f(*color)
-                #sight_dir = direction + idx * math.pi / 15
                 pyglet.graphics.draw(
                         2,
                         pyglet.gl.GL_LINES,
@@ -80,17 +79,22 @@ class Window(pyglet.window.Window):
                             x + sight * ratio * math.cos(sight_dir),
                             y + sight * ratio * math.sin(sight_dir))))
 
+        rewards = []
         for agent in agents:
             x = agent['x']
             y = agent['y']
+            reward = agent['reward']
             size = agent['size']
             circle = pyglet.sprite.Sprite(
                     img=self.circle_img,
-                    x=x, y=y)
+                    x=x, y=y,
+            )
+            if reward:
+                rewards.append(reward)
             circle.scale = size / self.circle_img.width * 1.3
             circle.draw()
+        print(rewards)
 
-        #self.label.draw()
         self.flip()
 
     def on_draw(self):
