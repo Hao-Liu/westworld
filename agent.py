@@ -23,6 +23,7 @@ class Agent(object):
 
     def to_dict(self):
         keys = "x", "y", "v", "direction", "size", "sight", "vision", "n_cell", "aov", "reward"
+        result = {key: self.__dict__[key] for key in keys}
         return {key: self.__dict__[key] for key in keys}
 
 
@@ -104,8 +105,11 @@ class Agent(object):
             self.y = self.world.height - 1e-6
 
     def get_action(self):
-        self.world.brain.get_action(self.vision)
-        return None, None
+        if random.random() < 1.0000:
+            action = self.world.brain.get_action(self.vision)
+        else:
+            action = None, None
+        return action
 
     def step(self):
         dv, dd = self.get_action()

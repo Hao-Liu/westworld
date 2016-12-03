@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import itertools
 import math
 import threading
@@ -15,7 +17,7 @@ class World(object):
         self.running = False
         self.width = width
         self.height = height
-        self.brain = Brain(self)
+        self.brain = Brain()
 
         self.server = SimpleXMLRPCServer(("localhost", 8000), logRequests=False, allow_none=True)
         self.server.register_introspection_functions()
@@ -60,14 +62,13 @@ class World(object):
             agent.step()
 
     def run(self):
-        print("Listening on port 8000...")
         self.server_thread.start()
         try:
             self.running = True
             while self.running:
                 self.step()
         except KeyboardInterrupt:
-            pass
+            print("Canceled by user")
         finally:
             self.server.shutdown()
             self.server.server_close()
@@ -75,3 +76,6 @@ class World(object):
 
     def stop(self):
         self.running = False
+
+if __name__ == '__main__':
+    World().run()

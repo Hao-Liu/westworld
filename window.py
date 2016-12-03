@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import time
 import xmlrpc.client
 import math
@@ -101,10 +103,17 @@ class Window(pyglet.window.Window):
         self.render()
 
     def run(self):
-        time.sleep(0.02)
         try:
             while True:
+                time.sleep(0.02)
                 event = self.dispatch_events()
-                self.render()
+                try:
+                    self.render()
+                except ConnectionRefusedError:
+                    time.sleep(1)
         except KeyboardInterrupt:
             self.proxy.stop()
+
+
+if __name__ == '__main__':
+    Window().run()

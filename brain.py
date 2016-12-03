@@ -2,18 +2,17 @@ import tensorflow as tf
 import tflearn
 
 class Brain(object):
-    def __init__(self, world, num_actions=2, learning_rate=0.001):
-        self.world = world
+    def __init__(self, num_actions=2, learning_rate=0.001):
         self.session = tf.Session()
 
         self.s = tf.placeholder(tf.float32, [None, 10])
 
-        net = tflearn.fully_connected(self.s, 256, activation='relu')
+        net = tflearn.fully_connected(self.s, 10, activation='relu')
         self.q_values = tflearn.fully_connected(net, num_actions)
         network_params = tf.trainable_variables()
 
         self.st = tf.placeholder(tf.float32, [None, 10])
-        target_net = tflearn.fully_connected(self.st, 256, activation='relu')
+        target_net = tflearn.fully_connected(self.st, 10, activation='relu')
         self.target_q_values = tflearn.fully_connected(target_net, num_actions)
         target_network_params = tf.trainable_variables()[len(network_params):]
 
@@ -31,11 +30,11 @@ class Brain(object):
         self.grad_update = optimizer.minimize(cost, var_list=network_params)
 
         self.session.run(tf.initialize_all_variables())
+        self.session.run(self.reset_target_network_params)
 
     def get_action(self, vision):
-        print(vision)
         readout = self.q_values.eval(
                 session=self.session,
                 feed_dict={self.s: [vision]}
-                )
-        print(readout)
+                )[0]
+        return readout.tolist()
