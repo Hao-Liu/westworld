@@ -104,6 +104,7 @@ class Agent(object):
             self.y = self.world.height - 1e-6
 
     def get_action(self):
+        self.world.brain.get_action(self.vision)
         return None, None
 
     def step(self):
