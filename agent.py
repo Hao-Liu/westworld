@@ -3,6 +3,9 @@ from __future__ import division
 import random
 import math
 import utils
+import time
+
+import numpy as np
 
 class Agent(object):
     def __init__(self, world):
@@ -19,11 +22,17 @@ class Agent(object):
         self.sight = 100.0
         self.vision = [0.0 for _ in range(self.n_cell)]
         self.reward = 0
+
+        self.t = 0
+        self.y_batch = []
+        self.a_batch = []
+        self.s_batch = []
+
         self.step()
 
     def to_dict(self):
-        keys = "x", "y", "v", "direction", "size", "sight", "vision", "n_cell", "aov", "reward"
-        result = {key: self.__dict__[key] for key in keys}
+        keys = ("x", "y", "v", "direction", "size", "sight", "vision",
+                "n_cell", "aov", "reward")
         return {key: self.__dict__[key] for key in keys}
 
 
@@ -66,22 +75,18 @@ class Agent(object):
             return True
         return False
 
-    def update_position(self, dv=None, dd=None):
-        if dv is None:
-            dv = (random.random() - 0.5) * 0.1
-        if dd is None:
-            dd = (random.random() - 0.5) * 0.1
-        if dv > 0.05:
-            dv = 0.05
-        elif dv < -0.05:
-            dv = -0.05
-        if dd > 0.05:
-            dd = 0.05
-        elif dd < -0.05:
-            dd = -0.05
+    def update_position(self, accel, steer):
+        if accel > 0.05:
+            accel = 0.05
+        elif accel < -0.05:
+            accel = -0.05
+        if steer > 0.05:
+            steer = 0.05
+        elif steer < -0.05:
+            steer = -0.05
 
-        self.direction += dd
-        self.v += dv
+        self.direction += steer
+        self.v += accel
 
         if self.direction > math.pi * 2:
             self.direction -= math.pi * 2
@@ -105,14 +110,42 @@ class Agent(object):
             self.y = self.world.height - 1e-6
 
     def get_action(self):
-        if random.random() < 1.0000:
+        if random.random() < 0.5000:
             action = self.world.brain.get_action(self.vision)
         else:
-            action = None, None
+            action = [(random.random() - 0.5) * 0.1 for _ in range(2)]
         return action
 
-    def step(self):
-        dv, dd = self.get_action()
-        self.update_position(dv, dd)
+    def step(self, gamma=0.99, i_update=5):
+        s_t = self.vision
+        a_t = self.get_action()
+
+        self.update_position(*a_t)
         self.update_tile()
         self.update_vision()
+
+        s_t1 = self.vision
+        r_t = np.clip(self.reward, -1, 1)
+
+        q_t1 = self.world.brain.get_target_action(s_t1)
+        self.y_batch.append(r_t + gamma * q_t1)
+        self.a_batch.append(a_t)
+        self.s_batch.append(s_t)
+        if len(self.s_batch) % i_update:
+            self.world.brain.session.run(
+                self.world.brain.grad_update,
+                feed_dict={
+                    self.world.brain.y: self.y_batch,
+                    self.world.brain.a: self.a_batch,
+                    self.world.brain.s: self.s_batch
+                }
+            )
+            self.y_batch = []
+            self.a_batch = []
+            self.s_batch = []
+
+
+    def run(self):
+        while self.world.running:
+            time.sleep(0.002)
+            self.step()

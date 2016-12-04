@@ -11,15 +11,6 @@ import utils
 class Window(pyglet.window.Window):
     def __init__(self, width=800, height=600):
         super(Window, self).__init__(width=width, height=height)
-        self.label = pyglet.text.Label(
-                'Hello, world',
-                font_name='Times New Roman',
-                font_size=36,
-                x=self.width//2,
-                y=self.height//2,
-                anchor_x='center',
-                anchor_y='center',
-                )
 
         pyglet.resource.path = ['.']
         pyglet.resource.reindex()
@@ -27,6 +18,20 @@ class Window(pyglet.window.Window):
         self.circle_img.anchor_x = self.circle_img.width / 2
         self.circle_img.anchor_y = self.circle_img.height / 2
         self.proxy = xmlrpc.client.ServerProxy('http://localhost:8000')
+
+    def render_no_connection(self):
+        self.clear()
+        label = pyglet.text.Label(
+                'Cannot connect to server',
+                font_name='Times New Roman',
+                font_size=36,
+                x=self.width//2,
+                y=self.height//2,
+                anchor_x='center',
+                anchor_y='center',
+                )
+        label.draw()
+        self.flip()
 
     def render(self):
         self.clear()
@@ -111,8 +116,12 @@ class Window(pyglet.window.Window):
                     self.render()
                 except ConnectionRefusedError:
                     time.sleep(1)
+                    self.render_no_connection()
         except KeyboardInterrupt:
-            self.proxy.stop()
+            try:
+                self.proxy.stop()
+            except ConnectionRefusedError:
+                pass
 
 
 if __name__ == '__main__':

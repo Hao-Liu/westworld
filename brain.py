@@ -16,9 +16,9 @@ class Brain(object):
         self.target_q_values = tflearn.fully_connected(target_net, num_actions)
         target_network_params = tf.trainable_variables()[len(network_params):]
 
-        self.reset_target_network_params = \
-            [target_network_params[i].assign(network_params[i])
-             for i in range(len(target_network_params))]
+        self.reset_target_network_params = [
+            target_network_params[i].assign(network_params[i])
+            for i in range(len(target_network_params))]
 
         self.a = tf.placeholder("float", [None, num_actions])
         self.y = tf.placeholder("float", [None])
@@ -31,10 +31,18 @@ class Brain(object):
 
         self.session.run(tf.initialize_all_variables())
         self.session.run(self.reset_target_network_params)
+        self.t = 0
 
     def get_action(self, vision):
         readout = self.q_values.eval(
                 session=self.session,
                 feed_dict={self.s: [vision]}
+                )[0]
+        return readout.tolist()
+
+    def get_target_action(self, vision):
+        readout = self.target_q_values.eval(
+                session=self.session,
+                feed_dict={self.st: [vision]}
                 )[0]
         return readout.tolist()

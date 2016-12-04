@@ -43,6 +43,10 @@ class World(object):
         for i in range(n_agents):
             agent = Agent(self)
             self.agents.append(agent)
+        self.agent_threads = [
+            threading.Thread(target=agent.run)
+            for agent in self.agents
+        ]
 
     def get_tiles(self):
         tiles = []
@@ -56,23 +60,24 @@ class World(object):
             agents.append(agent.to_dict())
         return agents
 
-    def step(self):
-        time.sleep(0.002)
-        for agent in self.agents:
-            agent.step()
-
     def run(self):
         self.server_thread.start()
         try:
             self.running = True
-            while self.running:
-                self.step()
+            for t in self.agent_threads:
+                t.start()
+
+            while True:
+                time.sleep(1)
         except KeyboardInterrupt:
             print("Canceled by user")
+            self.running = False
         finally:
             self.server.shutdown()
             self.server.server_close()
             self.server_thread.join()
+            for t in self.agent_threads:
+                t.join()
 
     def stop(self):
         self.running = False
